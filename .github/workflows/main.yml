@@ -44,5 +44,12 @@ jobs:
           ssh-private-key: ${{ secrets.EC2_SSH_KEY }}
       - name: Deploy to EC2
         run: |
-          ssh -o StrictHostKeyChecking=no ubuntu@${{ secrets.EC2_INSTANCE_IP }} \
-          "docker pull ${{ secrets.AWS_ECR_LOGIN_URI }}/${{ secrets.ECR_REPOSITORY_NAME }}:latest && docker run -d -p 8080:8080 ${{ secrets.AWS_ECR_LOGIN_URI }}/${{ secrets.ECR_REPOSITORY_NAME }}:latest"
+          ssh -o StrictHostKeyChecking=no ubuntu@${{ secrets.EC2_INSTANCE_IP }} "
+            aws ecr get-login-password --region us-east-1 |
+            docker login --username AWS --password-stdin ${{ secrets.AWS_ECR_LOGIN_URI }} &&
+            docker pull ${{ secrets.AWS_ECR_LOGIN_URI }}/${{ secrets.ECR_REPOSITORY_NAME }}:latest &&
+            docker stop app || true &&
+            docker rm app || true &&
+            docker run -d --name app -p 8080:8080 \
+            ${{ secrets.AWS_ECR_LOGIN_URI }}/${{ secrets.ECR_REPOSITORY_NAME }}:latest
+            "
