@@ -7,4 +7,6 @@ b) setup.py
 c) requirments.txt
 
 2- src folder and build the package
- 
+
+
+ AWS Deployment
